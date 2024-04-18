@@ -1,11 +1,3 @@
-# ignore all
-**
-
-# Except src for building
-!./src/*
-# TODO : Remove this line when Docker Buildkit works in Windows
-!/.build/release/*
-
 # Ignore any App_Data folder
 **/App_Data/
 

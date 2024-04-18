@@ -143,6 +143,7 @@ namespace OrchardCore.Media
             // Add ImageSharp Configuration first, to override ImageSharp defaults.
             services.AddTransient<IConfigureOptions<ImageSharpMiddlewareOptions>, MediaImageSharpConfiguration>();
 
+            var homeDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
             services
                 .AddImageSharp()
                 .RemoveProvider<PhysicalFileSystemProvider>()
@@ -150,7 +151,7 @@ namespace OrchardCore.Media
                 .SetCacheKey<BackwardsCompatibleCacheKey>()
                 .Configure<PhysicalFileSystemCacheOptions>(options =>
                 {
-                    options.CacheFolder = $"{_shellSettings.Name}/{ImageSharpCacheFolder}";
+                    options.CacheFolder = Path.Combine(homeDirectory, _shellSettings.Name, ImageSharpCacheFolder);
                     options.CacheFolderDepth = 12;
                 })
                 .AddProvider<MediaResizingFileProvider>()

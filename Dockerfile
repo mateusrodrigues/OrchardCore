@@ -1,21 +1,13 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS build
-ARG TARGETOS
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
-LABEL stage=build-env
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra AS base
 WORKDIR /app
+EXPOSE 8080
 
-# Copy and build
-COPY ./src /app
-RUN dotnet publish /app/OrchardCore.Cms.Web -c Release -o ./build/release --framework net8.0
+FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+RUN apt-get update && apt-get upgrade --yes
+COPY . /app/
+RUN dotnet publish /app/src/OrchardCore.Cms.Web -c Release -o /app/build/release --framework net8.0
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-1809 AS build_windows
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS build_linux
-FROM build_${TARGETOS} AS aspnet
-
-EXPOSE 80
-ENV ASPNETCORE_URLS http://+:80
+FROM base AS final
 WORKDIR /app
-COPY --from=build-env /app/build/release .
+COPY --from=build /app/build/release .
 ENTRYPOINT ["dotnet", "OrchardCore.Cms.Web.dll"]
